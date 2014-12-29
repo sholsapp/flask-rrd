@@ -17,12 +17,11 @@ setup(
   url='http://www.flask.com',
   packages=['flaskrrd'],
   install_requires=[
-    'configobj',
-    'validate',
-    'Flask',
     'Flask-Bootstrap',
     'Flask-Script',
     'Flask-SQLAlchemy',
     'Flask-Restless',
+    'Flask',
+    'configobj',
   ],
 )
