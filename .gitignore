@@ -52,3 +52,11 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# RRD
+*.rrd
+*.png
+*.db
+
+# Vim
+*.swp

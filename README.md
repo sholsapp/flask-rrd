@@ -1,46 +1,9 @@
-# flask-skeleton
-
-A "hello world" style Flask web server application that (optionally) runs on
-Heroku. Some notable parts used in this web application are:
-
-  1. [Flask](http://flask.pocoo.org/)
-  2. [Gunicorn](http://gunicorn.org/)
-  3. [Flask-Restless](https://flask-restless.readthedocs.org/en/latest/)
-  4. [Flask-SQLAlchemy](https://pythonhosted.org/Flask-SQLAlchemy/)
-  5. [Flask-Bootstrap](http://pythonhosted.org/Flask-Bootstrap/)
-  6. [Flask-Script](http://flask-script.readthedocs.org/en/latest/)
+# flask-rrd
 
 ## development
 
-Before you get started you'll need to have Python 2.6+ installed. After, you'll
-need to also instal virtualenv. Research how to do this for whatever platform
-you run before continuing.
-
-### setup a virtualenv
-
-Create a virtual environment the web application by running the following
-commands in a terminal.
+### dependencies
 
 ```bash
-virtualenv my-venv
-source my-venv/bin/activate
-python setup.py develop
+apt-get install python-dev librrd-dev libxml2-dev libglib2.0-dev libcairo2-dev libpango1.0-dev```
 ```
-### start the web server
-
-Start the web server on your local machine using Flask-Manager.
-
-```bash
-./manage.py runserver
-```
-
-Then, in your browser, navigate to http://127.0.0.1:5000/. You should see
-something like the following image.
-
-![The flask-heroku application running in a web browser.](https://github.com/sholsapp/flask-heroku/blob/master/data/flask-heroku.png)
-
-## heroku
-
-Before you can get started on Heroku, you'll need to have a Heroku account and
-their toolchain setup. To do that, follow the instructions at
-https://devcenter.heroku.com/articles/quickstart.
