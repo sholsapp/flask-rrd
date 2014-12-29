@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import json
+import random
 import requests
+import time
 
 from configobj import ConfigObj
 from validate import Validator
@@ -16,16 +18,22 @@ manager = Manager(app)
 
 
 @manager.command
-def update_database():
-  import random
-  import time
+def update_rrd():
   while True:
-    print '.'
-    m1 = random.randint(0, 100)
-    m2 = random.randint(0, 100)
-    m3 = random.randint(0, 100)
-    ret = rrdtool.update('test.rrd', 'N:%s:%s:%s' % (m1, m2, m3))
-    time.sleep(1)
+    try:
+      print requests.post(
+        'http://localhost:5000/update/test',
+        headers={'Content-Type': 'application/json'},
+        data=json.dumps({'values': [
+          str(random.randint(0, 1000)),
+          str(random.randint(0, 1000)),
+          str(random.randint(0, 1000)),
+        ]})).status_code
+    except Exception:
+      print 'Failed to make request, maybe server is down?'
+      #raise
+    finally:
+      time.sleep(1)
 
 
 @manager.command
@@ -43,6 +51,7 @@ def create_rrd():
 
 @manager.command
 def dump_database():
+  """Dump the flask-rrd database."""
   init_webapp()
   for r in RRD.query.all():
     print r
