@@ -23,5 +23,6 @@ setup(
     'Flask-Restless',
     'Flask',
     'configobj',
+    'procfs',
   ],
 )

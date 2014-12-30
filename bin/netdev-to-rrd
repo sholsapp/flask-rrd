@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+"Send network interface traffic to RRD server."""
+
+import argparse
+import json
+import requests
+
+from procfs import Proc
+
+
+def create(interface):
+  return requests.post(
+    'http://localhost:5000/create/netdev-{interface}'.format(interface=interface),
+    headers={'Content-Type': 'application/json'},
+    data=json.dumps({'metrics': ['rx', 'tx'], 'type': 'COUNTER'})
+  ).status_code
+
+
+def update(interface):
+  proc = Proc()
+  return requests.post(
+    'http://localhost:5000/update/netdev-{interface}'.format(interface=interface),
+    headers={'Content-Type': 'application/json'},
+    data=json.dumps({'values': [
+      str(proc.net.dev.get(interface).receive.bytes),
+      str(proc.net.dev.get(interface).transmit.bytes),
+    ]})
+  ).status_code
+
+
+def main():
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('interface')
+  parser.add_argument('--create', action='store_true')
+  args = parser.parse_args()
+  if args.create:
+    print create(args.interface)
+  else:
+    print update(args.interface)
+
+
+if __name__ == '__main__':
+  main()
