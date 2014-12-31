@@ -31,6 +31,17 @@ class RRD(db.Model):
     self.path = path
 
 
+class Graph(db.Model):
+  """A database table for graphs of RRD databases."""
+
+  __tablename__ = 'graph'
+
+  id = db.Column(db.Integer, primary_key=True)
+
+  def __init__(self):
+    pass
+
+
 def make_conn_str():
   """Make an local database file on disk."""
   return 'sqlite:///flaskrrd.db'
