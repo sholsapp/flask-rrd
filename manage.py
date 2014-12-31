@@ -41,6 +41,7 @@ def graph_rrd():
   print requests.get(
     'http://localhost:5000/graph/test').status_code
 
+
 @manager.command
 def create_rrd():
   print requests.post(
