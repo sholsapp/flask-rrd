@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 app = Flask(__name__)
 app.register_blueprint(api, url_prefix='/api')
 manager = APIManager(app, flask_sqlalchemy_db=db)
-#manager.create_api(Messages, methods=['GET', 'POST'])
+manager.create_api(RRD, methods=['GET', 'POST'])
 Bootstrap(app)
 
 
@@ -96,7 +96,13 @@ def update(rrd):
 
 @app.route('/graph/<rrd>')
 def graph(rrd):
-  """Graph a RRD database."""
+  """Graph an entire RRD database.
+
+  This functionality is a generic default that graphs all metrics contained in
+  an RRD database. For customized views on an RRD database, use <fill this in
+  later>.
+
+  """
 
   rrd_dir = os.path.join(app.static_folder, 'rrds')
   if not os.path.exists(rrd_dir):
@@ -114,22 +120,22 @@ def graph(rrd):
     log.error('No existing entry for rrd [%s].', rrd)
     return Response(405)
 
+  acc = []
+  for metric in rrd_entry.cols_desc.split(','):
+    acc.append('DEF:{metric}_num={rrd_path}:{metric}:AVERAGE'.format(
+      metric=metric,
+      rrd_path=rrd_path))
+    acc.append('LINE1:{metric}_num#0000FF:{metric}'.format(
+      metric=metric))
+
   ret = rrdtool.graph(
     png_path,
     '--start', '-1d',
     '--vertical-label=Num',
     '-w 600',
-    # XXX: This only works for the sample graph that we generated from the
-    # manage.py `create_rrd` command for now. We'll need a database to record this
-    # sort of stuff and do validation in the future.
-    'DEF:m1_num={rrd_path}:metric1:AVERAGE'.format(rrd_path=rrd_path),
-    'DEF:m2_num={rrd_path}:metric2:AVERAGE'.format(rrd_path=rrd_path),
-    'DEF:m3_num={rrd_path}:metric3:AVERAGE'.format(rrd_path=rrd_path),
-    'LINE1:m1_num#0000FF:metric1',
-    'LINE1:m2_num#00FF00:metric2',
-    'LINE1:m3_num#FF0000:metric3',
-    'GPRINT:m1_num:LAST:Last m1 value\: %2.1lf X',
-    'GPRINT:m2_num:LAST:Last m2 value\: %2.1lf X',
-    'GPRINT:m3_num:LAST:Last m3 value\: %2.1lf X',)
+    acc)
+    #'GPRINT:m1_num:LAST:Last m1 value\: %2.1lf X',
+    #'GPRINT:m2_num:LAST:Last m2 value\: %2.1lf X',
+    #'GPRINT:m3_num:LAST:Last m3 value\: %2.1lf X',)
 
   return render_template('index.html', png_url=url_for('static', filename='rrds/{rrd}-day.png'.format(rrd=rrd)))
