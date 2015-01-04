@@ -21,6 +21,18 @@ manager.create_api(RRD, methods=['GET', 'POST'])
 Bootstrap(app)
 
 
+class ColorWheel(object):
+  i = 0
+  WHEEL = [
+    '#FF0000',
+    '#00FF00',
+    '#0000FF']
+  def next(self):
+    color = self.WHEEL[self.i % len(self.WHEEL)]
+    self.i += 1
+    return color
+
+
 def init_webapp():
   """Initialize the web application."""
   app.config['SQLALCHEMY_DATABASE_URI'] = make_conn_str()
@@ -61,9 +73,12 @@ def create(rrd):
 
   rrdtool.create(
     rrd_path,
-    '--step', '300',
+    '--step', '60',
     '--start', '0',
     metrics,
+    # See http://oss.oetiker.ch/rrdtool/doc/rrdcreate.en.html#___top for more
+    # about RRA.
+    # RRA:AVERAGE | MIN | MAX | LAST:xff:steps:rows
     'RRA:MIN:0:360:576',
     'RRA:MIN:0:30:576',
     'RRA:MIN:0:7:576',
@@ -120,17 +135,20 @@ def graph(rrd):
     log.error('No existing entry for rrd [%s].', rrd)
     return Response(405)
 
+  color_wheel = ColorWheel()
+
   acc = []
   for metric in rrd_entry.cols_desc.split(','):
     acc.append('DEF:{metric}_num={rrd_path}:{metric}:AVERAGE'.format(
       metric=metric,
       rrd_path=rrd_path))
-    acc.append('LINE1:{metric}_num#0000FF:{metric}'.format(
-      metric=metric))
+    acc.append('LINE1:{metric}_num{color}:{metric}'.format(
+      metric=metric,
+      color=color_wheel.next()))
 
   ret = rrdtool.graph(
     png_path,
-    '--start', '-1d',
+    '--start', '-1h',
     '--vertical-label=Num',
     '-w 600',
     acc)
