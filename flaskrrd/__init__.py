@@ -79,16 +79,16 @@ def create(rrd):
     # See http://oss.oetiker.ch/rrdtool/doc/rrdcreate.en.html#___top for more
     # about RRA.
     # RRA:AVERAGE | MIN | MAX | LAST:xff:steps:rows
-    'RRA:MIN:0:360:576',
-    'RRA:MIN:0:30:576',
-    'RRA:MIN:0:7:576',
-    'RRA:AVERAGE:0:360:576',
-    'RRA:AVERAGE:0:30:576',
-    'RRA:AVERAGE:0:7:576',
-    'RRA:AVERAGE:0:1:576',
-    'RRA:MAX:0:360:576',
-    'RRA:MAX:0:30:576',
-    'RRA:MAX:0:7:576',)
+    'RRA:MIN:0:360:2400',
+    'RRA:MIN:0:30:2400',
+    'RRA:MIN:0:7:2400',
+    'RRA:AVERAGE:0:360:2400',
+    'RRA:AVERAGE:0:30:2400',
+    'RRA:AVERAGE:0:7:2400',
+    'RRA:AVERAGE:0:1:2400',
+    'RRA:MAX:0:360:2400',
+    'RRA:MAX:0:30:2400',
+    'RRA:MAX:0:7:2400',)
 
   new_rrd = RRD(rrd, desc['metrics'], desc['type'], rrd_path)
   db.session.add(new_rrd)
@@ -150,6 +150,7 @@ def graph(rrd):
     png_path,
     '--start', '-1h',
     '--vertical-label=Num',
+    '--slope-mode',
     '-w 600',
     acc)
     #'GPRINT:m1_num:LAST:Last m1 value\: %2.1lf X',
