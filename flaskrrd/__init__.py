@@ -22,11 +22,28 @@ Bootstrap(app)
 
 
 class ColorWheel(object):
+
   i = 0
-  WHEEL = [
-    '#FF0000',
-    '#00FF00',
-    '#0000FF']
+  WHEEL = []
+
+  def __init__(self):
+    for red in range(255, 64, -8):
+      self.WHEEL.append(self.rgb_to_hex((red, 0, 0)))
+    for green in range(255, 64, -8):
+      self.WHEEL.append(self.rgb_to_hex((0, green, 0)))
+    for blue in range(255, 64, -8):
+      self.WHEEL.append(self.rgb_to_hex((0, 0, blue)))
+
+  @classmethod
+  def hex_to_rgb(cls, value):
+    value = value.lstrip('#')
+    lv = len(value)
+    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+  @classmethod
+  def rgb_to_hex(cls, rgb):
+    return '#%02x%02x%02x' % rgb
+
   def next(self):
     color = self.WHEEL[self.i % len(self.WHEEL)]
     self.i += 1
