@@ -162,11 +162,11 @@ def graph(rrd):
     acc.append('LINE1:{metric}_num{color}:{metric}'.format(
       metric=metric,
       color=color_wheel.next()))
-    acc.append('GPRINT:{metric}_num:MIN:Min %2.1lf'.format(
+    acc.append('GPRINT:{metric}_num:MIN:Min %2.1lf%s'.format(
       metric=metric))
-    acc.append('GPRINT:{metric}_num:AVERAGE:Avg %2.1lf'.format(
+    acc.append('GPRINT:{metric}_num:AVERAGE:Avg %2.1lf%s'.format(
       metric=metric))
-    acc.append('GPRINT:{metric}_num:MAX:Max %2.1lf\\n'.format(
+    acc.append('GPRINT:{metric}_num:MAX:Max %2.1lf%s\j'.format(
       metric=metric))
 
   ret = rrdtool.graph(
