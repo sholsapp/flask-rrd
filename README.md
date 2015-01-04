@@ -6,6 +6,9 @@ create, update and graph RRD databases using
 
 ## development
 
+The following is helpful for setting up a development environment or getting
+started with a sample RRD. For actual deployment, see the `deployment` section.
+
 ### dependencies
 
 ```bash
@@ -49,3 +52,15 @@ Alternatively, you can navigate to
 [http://localhost:5000/graph/test](http://localhost:5000/graph/test) to see the
 RRD graph itself instead of
 the response code.
+
+## deployment
+
+The RRD collectors provided in the `bin` directory depend on CRONd to invoke
+them every minute. I'm not a huge fan of this, but this is easier for now.
+
+```
+VENV=/path/to/venv
+FLASK_RRD_GIT=/path/to/flask-rrd/
+* * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/meminfo-to-rrd
+* * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/netdev-to-rrd eth0
+```
