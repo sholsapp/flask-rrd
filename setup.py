@@ -24,5 +24,7 @@ setup(
     'Flask',
     'configobj',
     'procfs',
+    'requests',
+    'rrdtool',
   ],
 )
