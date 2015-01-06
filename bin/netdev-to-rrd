@@ -9,35 +9,29 @@ import requests
 from procfs import Proc
 
 
-def create(interface):
-  return requests.post(
-    'http://localhost:5000/create/netdev-{interface}'.format(interface=interface),
-    headers={'Content-Type': 'application/json'},
-    data=json.dumps({'metrics': ['rx', 'tx'], 'type': 'COUNTER'})
-  ).status_code
-
-
 def update(interface):
   proc = Proc()
   return requests.post(
-    'http://localhost:5000/update/netdev-{interface}'.format(interface=interface),
+    'http://localhost:5000/update/netdev',
     headers={'Content-Type': 'application/json'},
-    data=json.dumps({'values': [
-      str(proc.net.dev.get(interface).receive.bytes),
-      str(proc.net.dev.get(interface).transmit.bytes),
-    ]})
+    data=json.dumps({
+      'metrics': {
+        'COUNTER': {
+          '{interface}.rx.bytes'.format(interface=interface): proc.net.dev.get(interface).receive.bytes,
+          '{interface}.rx.packets'.format(interface=interface): proc.net.dev.get(interface).receive.packets,
+          '{interface}.tx.bytes'.format(interface=interface): proc.net.dev.get(interface).transmit.bytes,
+          '{interface}.tx.packets'.format(interface=interface): proc.net.dev.get(interface).transmit.packets,
+        },
+      },
+    })
   ).status_code
 
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('interface')
-  parser.add_argument('--create', action='store_true')
   args = parser.parse_args()
-  if args.create:
-    print create(args.interface)
-  else:
-    print update(args.interface)
+  print update(args.interface)
 
 
 if __name__ == '__main__':

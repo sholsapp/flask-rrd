@@ -9,51 +9,23 @@ import requests
 from procfs import Proc
 
 
-# XXX: Normalizing the dataset names should probably be done in the server so
-# that this class of errors is reported in a sane manner. This also makes
-# collection more difficult, so maybe it is something that the server can
-# transparently hide.
-def get_keys():
-  proc = Proc()
-  keys = []
-  for key in sorted(proc.meminfo.keys()):
-    key = key.replace('(', '')
-    key = key.replace(')', '')
-    key = key.replace('_', '')
-    keys.append(key)
-  return keys
-
-
-def create():
-  return requests.post(
-    'http://localhost:5000/create/meminfo',
-    headers={'Content-Type': 'application/json'},
-    data=json.dumps({'metrics': get_keys(), 'type': 'COUNTER'})
-  ).status_code
-
-
 def update():
   proc = Proc()
-  values = []
-  for key in sorted(proc.meminfo.keys()):
-    values.append(str(proc.meminfo[key]))
-  print get_keys()
-  print values
   return requests.post(
     'http://localhost:5000/update/meminfo',
     headers={'Content-Type': 'application/json'},
-    data=json.dumps({'values': values})
+    data=json.dumps({
+      'metrics': {
+        'COUNTER': dict(proc.meminfo),
+      },
+    })
   ).status_code
 
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--create', action='store_true')
   args = parser.parse_args()
-  if args.create:
-    print create()
-  else:
-    print update()
+  print update()
 
 
 if __name__ == '__main__':

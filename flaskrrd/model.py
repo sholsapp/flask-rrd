@@ -14,20 +14,17 @@ class RRD(db.Model):
   name = db.Column(db.String(60))
   cols_n = db.Column(db.Integer)
   cols_desc = db.Column(db.String(1024))
-  type = db.Column(db.String(60))
   path = db.Column(db.String(1024))
 
   def __repr__(self):
-    return 'RRD(%r, %r, %r)' % (
+    return 'RRD(%r, %r)' % (
       repr(self.name),
-      repr(self.cols_desc.split(',')),
-      repr(self.type))
+      repr(self.cols_desc.split(',')))
 
-  def __init__(self, name, cols, type, path):
+  def __init__(self, name, cols, path):
     self.name = name
     self.cols_n = len(cols)
     self.cols_desc = ','.join(cols)
-    self.type = type
     self.path = path
 
 

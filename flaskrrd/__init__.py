@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 from flask import Flask, Response, render_template, jsonify, request, url_for
 from flask.ext.bootstrap import Bootstrap
@@ -24,15 +25,25 @@ Bootstrap(app)
 class ColorWheel(object):
 
   i = 0
-  WHEEL = []
 
-  def __init__(self):
-    for red in range(255, 64, -8):
-      self.WHEEL.append(self.rgb_to_hex((red, 0, 0)))
-    for green in range(255, 64, -8):
-      self.WHEEL.append(self.rgb_to_hex((0, green, 0)))
-    for blue in range(255, 64, -8):
-      self.WHEEL.append(self.rgb_to_hex((0, 0, blue)))
+  CRAFTSMAN = [
+    '#d7c797', # (215,199,151)
+    '#845422', # (132,84,34)
+    '#ead61c', # (234,214,28)
+    '#a47c48', # (164,124,72)
+    '#000000', # (0,0,0)
+  ]
+
+  GRYFFINDOR = [
+    '#740001', # (116,0,1)
+    '#ae0001', # (174,0,1)
+    '#eeba30', # (238,186,48)
+    '#d3a625', # (211,166,37)
+    '#000000', # (0,0,0)
+  ]
+
+  WHEEL = list(GRYFFINDOR)
+
 
   @classmethod
   def hex_to_rgb(cls, value):
@@ -56,6 +67,9 @@ def init_webapp():
   db.app = app
   db.init_app(app)
   db.create_all()
+  rrd_dir = os.path.join(app.static_folder, 'rrds')
+  if not os.path.exists(rrd_dir):
+    os.makedirs(rrd_dir)
   return app
 
 
@@ -64,30 +78,31 @@ def index():
   return 'GOOD'
 
 
-@app.route('/create/<rrd>', methods=['POST'])
-def create(rrd):
-  """Creates a new RRD database.
+def sanitized_ds(ds):
+  """Remove illegal characters from a data source name."""
+  return re.sub('[^A-Za-z0-9_]+', '', ds)
 
-  The request should contain a JSON payload that specifies parameters to the
-  `rrdtool.create` function.
+
+def get_rrd_path(rrd):
+  rrd_dir = os.path.join(app.static_folder, 'rrds')
+  return os.path.join(rrd_dir, '{rrd}.rrd'.format(rrd=rrd))
+
+
+def create_rrd(rrd, description):
+  """Create an RRD.
+
+  :param description: A :class:`dict` that describes the new RRD.
 
   """
-
-  desc = request.json
-
-  log.debug('Creating database for [%s] with description [%s]', rrd, desc)
-
-  rrd_dir = os.path.join(app.static_folder, 'rrds')
-  if not os.path.exists(rrd_dir):
-    os.makedirs(rrd_dir)
-  rrd_path = os.path.join(rrd_dir, '{rrd}.rrd'.format(rrd=rrd))
-
+  rrd_path = get_rrd_path(rrd)
+  metrics_names = []
   metrics = []
-  for name in desc['metrics']:
-    metrics.append(
-      'DS:{name}:{type}:2000:U:U'.format(name=name, type=desc['type'])
-    )
-
+  for ds_type in description['metrics']:
+    for ds in description['metrics'][ds_type]:
+      metrics_names.append(ds)
+      metrics.append(
+        'DS:{name}:{type}:2000:U:U'.format(name=sanitized_ds(ds), type=ds_type)
+      )
   rrdtool.create(
     rrd_path,
     '--step', '60',
@@ -106,23 +121,34 @@ def create(rrd):
     'RRA:MAX:0:360:2400',
     'RRA:MAX:0:30:2400',
     'RRA:MAX:0:7:2400',)
-
-  new_rrd = RRD(rrd, desc['metrics'], desc['type'], rrd_path)
+  new_rrd = RRD(rrd, metrics_names, rrd_path)
   db.session.add(new_rrd)
   db.session.commit()
+  return True
 
-  return Response(status=200)
+
+@app.route('/info/<rrd>', methods=['GET'])
+def info(rrd):
+  return jsonify(rrdtool.info(get_rrd_path(rrd)))
 
 
 @app.route('/update/<rrd>', methods=['POST'])
 def update(rrd):
-  """Update a RRD database."""
+  """Update or create a RRD database."""
   desc = request.json
   rrd_entry = RRD.query.filter_by(name=rrd).first()
   if not rrd_entry:
-    log.error('No existing entry for rrd [%s].', rrd)
-    return Response(status=405)
-  rrdtool.update(str(rrd_entry.path), 'N:{data}'.format(data=':'.join(desc['values'])))
+    if create_rrd(rrd, desc):
+      log.info('Creating new rrd [%s] on update.', rrd)
+    else:
+      log.error('Could not create new rrd [%s] on update.', rrd)
+      return Response(status=405)
+  rrd_entry = RRD.query.filter_by(name=rrd).first()
+  data = []
+  for ds_type in desc['metrics']:
+    for ds in desc['metrics'][ds_type]:
+      data.append(str(desc['metrics'][ds_type][ds]))
+  rrdtool.update(str(rrd_entry.path), 'N:{data}'.format(data=':'.join(data)))
   return Response(status=200)
 
 
@@ -156,6 +182,7 @@ def graph(rrd):
 
   acc = []
   for metric in rrd_entry.cols_desc.split(','):
+    metric = sanitized_ds(metric)
     acc.append('DEF:{metric}_num={rrd_path}:{metric}:AVERAGE'.format(
       metric=metric,
       rrd_path=rrd_path))
@@ -172,12 +199,10 @@ def graph(rrd):
   ret = rrdtool.graph(
     png_path,
     '--start', '-1h',
-    '--vertical-label=Num',
+    '--title={title}'.format(title=rrd),
+    '--vertical-label=Default',
     '--slope-mode',
-    '-w 600',
+    '-w 450',
     acc)
-    #'GPRINT:m1_num:LAST:Last m1 value\: %2.1lf X',
-    #'GPRINT:m2_num:LAST:Last m2 value\: %2.1lf X',
-    #'GPRINT:m3_num:LAST:Last m3 value\: %2.1lf X',)
 
   return render_template('index.html', png_url=url_for('static', filename='rrds/{rrd}-day.png'.format(rrd=rrd)))
