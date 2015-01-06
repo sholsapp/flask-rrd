@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+"Send network interface traffic to RRD server."""
+
+import argparse
+import json
+import requests
+
+from procfs import Proc
+
+
+def update():
+  proc = Proc()
+
+  cpu = {}
+  for key, timedelta in proc.stat.cpu.iteritems():
+    cpu[key] = int(timedelta.total_seconds() * 100)
+
+  return requests.post(
+    'http://localhost:5000/update/stat',
+    headers={'Content-Type': 'application/json'},
+    data=json.dumps({
+      'metrics': {
+        'COUNTER': cpu,
+      },
+    })
+  ).status_code
+
+
+def main():
+  parser = argparse.ArgumentParser(description=__doc__)
+  args = parser.parse_args()
+  print update()
+
+
+if __name__ == '__main__':
+  main()
