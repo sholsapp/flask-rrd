@@ -62,5 +62,6 @@ them every minute. I'm not a huge fan of this, but this is easier for now.
 VENV=/path/to/venv
 FLASK_RRD_GIT=/path/to/flask-rrd/
 * * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/meminfo-to-rrd
+* * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/stat-to-rrd
 * * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/netdev-to-rrd eth0
 ```
