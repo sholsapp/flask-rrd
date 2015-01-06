@@ -13,9 +13,15 @@ started with a sample RRD. For actual deployment, see the `deployment` section.
 
 ### dependencies
 
-```bash
-apt-get install python-dev librrd-dev libxml2-dev libglib2.0-dev libcairo2-dev libpango1.0-dev```
-```
+Several native dependencies need to be installed so that the Python `rrdtool`
+module can be compiled. Install them using the package manager of your choice:
+
+  1. python-dev
+  2. librrd-dev
+  3. libxml2-dev
+  4. libglib2.0-dev
+  5. libcairo2-dev
+  6. libpango1.0-dev
 
 ### samples
 
@@ -31,14 +37,9 @@ Start the web application.
 manage.py runserver
 ```
 
-Create the RRD.
-
-```bash
-manage.py create_rrd
-```
-
-Update the RRD. Note, this loops indefinitely (until you press CTRL+C) and will
-update the RRD database every second.
+Update the RRD. Note, this also creates the RRD the first time you run it. This
+loops indefinitely (until you press CTRL+C) and will update the RRD database
+every second.
 
 ```bash
 manage.py update_rrd

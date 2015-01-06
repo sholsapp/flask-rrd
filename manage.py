@@ -43,14 +43,6 @@ def graph_rrd():
 
 
 @manager.command
-def create_rrd():
-  print requests.post(
-    'http://localhost:5000/create/test',
-    headers={'Content-Type': 'application/json'},
-    data=json.dumps({'metrics': ['metric1', 'metric2', 'metric3'], 'type': 'GAUGE'})).status_code
-
-
-@manager.command
 def dump_database():
   """Dump the flask-rrd database."""
   init_webapp()
