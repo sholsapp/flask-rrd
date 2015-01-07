@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+"Send network interface traffic to RRD server."""
+
+import argparse
+import json
+import requests
+import subprocess
+
+
+def update():
+  out, _ = subprocess.Popen([
+    '/bin/df', '--output=source,used,avail'],
+    stdout=subprocess.PIPE).communicate()
+  disk_usage = {}
+  for line in out.split('\n')[1:]:
+    if line.startswith('/dev'):
+      disk, used, avail = line.split()
+      disk = disk.lstrip('/dev/')
+      disk_usage['{disk}.used'.format(disk=disk)] = used
+      disk_usage['{disk}.avail'.format(disk=disk)] = avail
+  return requests.post(
+    'http://localhost:5000/update/disk',
+    headers={'Content-Type': 'application/json'},
+    data=json.dumps({
+      'metrics': {
+        'GAUGE': disk_usage,
+      },
+    })
+  ).status_code
+
+
+def main():
+  parser = argparse.ArgumentParser(description=__doc__)
+  args = parser.parse_args()
+  print update()
+
+
+if __name__ == '__main__':
+  main()

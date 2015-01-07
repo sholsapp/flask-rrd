@@ -67,4 +67,5 @@ FLASK_RRD_GIT=/path/to/flask-rrd/
 * * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/meminfo-to-rrd
 * * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/stat-to-rrd
 * * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/netdev-to-rrd eth0
+* * * * * $VENV/bin/python $FLASK_RRD_GIT/bin/df-to-rrd
 ```
