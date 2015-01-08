@@ -88,6 +88,11 @@ def get_rrd_path(rrd):
   return os.path.join(rrd_dir, '{rrd}.rrd'.format(rrd=rrd))
 
 
+def get_png_path(rrd):
+  rrd_dir = os.path.join(app.static_folder, 'rrds')
+  return os.path.join(rrd_dir, '{rrd}-day.png'.format(rrd=rrd))
+
+
 def create_rrd(rrd, description):
   """Create an RRD.
 
@@ -161,25 +166,16 @@ def graph(rrd):
   later>.
 
   """
-
-  rrd_dir = os.path.join(app.static_folder, 'rrds')
-  if not os.path.exists(rrd_dir):
-    os.makedirs(rrd_dir)
-
-  rrd_path = os.path.join(rrd_dir, '{rrd}.rrd'.format(rrd=rrd))
+  rrd_path = get_rrd_path(rrd)
   if not os.path.exists(rrd_path):
     log.error('The rrd [%s] does not exist!', rrd)
     return Response(status=500)
-
-  png_path = os.path.join(rrd_dir, '{rrd}-day.png'.format(rrd=rrd))
-
+  png_path = get_png_path(rrd)
   rrd_entry = RRD.query.filter_by(name=rrd).first()
   if not rrd_entry:
     log.error('No existing entry for rrd [%s].', rrd)
     return Response(405)
-
   color_wheel = ColorWheel()
-
   acc = []
   for metric in rrd_entry.cols_desc.split(','):
     metric = sanitized_ds(metric)
@@ -195,7 +191,6 @@ def graph(rrd):
       metric=metric))
     acc.append('GPRINT:{metric}_num:MAX:Max %2.1lf%s\j'.format(
       metric=metric))
-
   ret = rrdtool.graph(
     png_path,
     '--start', '-1h',
@@ -204,5 +199,41 @@ def graph(rrd):
     '--slope-mode',
     '-w 450',
     acc)
+  return render_template('index.html', png_urls=[url_for('static', filename='rrds/{rrd}-day.png'.format(rrd=rrd))])
 
-  return render_template('index.html', png_url=url_for('static', filename='rrds/{rrd}-day.png'.format(rrd=rrd)))
+
+@app.route('/dashboard')
+def dashboard():
+  rrds = []
+  for rrd_entry in RRD.query.all():
+    rrd_path = get_rrd_path(rrd_entry.name)
+    if not os.path.exists(rrd_path):
+      log.error('The rrd [%s] does not exist!', rrd)
+      return Response(status=500)
+    png_path = get_png_path(rrd_entry.name)
+    color_wheel = ColorWheel()
+    acc = []
+    for metric in rrd_entry.cols_desc.split(','):
+      metric = sanitized_ds(metric)
+      acc.append('DEF:{metric}_num={rrd_path}:{metric}:AVERAGE'.format(
+        metric=metric,
+        rrd_path=rrd_path))
+      acc.append('LINE1:{metric}_num{color}:{metric}'.format(
+        metric=metric,
+        color=color_wheel.next()))
+      acc.append('GPRINT:{metric}_num:MIN:Min %2.1lf%s'.format(
+        metric=metric))
+      acc.append('GPRINT:{metric}_num:AVERAGE:Avg %2.1lf%s'.format(
+        metric=metric))
+      acc.append('GPRINT:{metric}_num:MAX:Max %2.1lf%s\j'.format(
+        metric=metric))
+    ret = rrdtool.graph(
+      png_path,
+      '--start', '-1h',
+      '--title={title}'.format(title=rrd_entry.name),
+      '--vertical-label=Default',
+      '--slope-mode',
+      '-w 450',
+      acc)
+    rrds.append(url_for('static', filename='rrds/{name}-day.png'.format(name=rrd_entry.name)))
+  return render_template('index.html', png_urls=rrds)

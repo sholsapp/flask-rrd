@@ -2,10 +2,11 @@
 
 {% block content %}
 
-<br>
 
+{% for png_url in png_urls %}
+<br>
 <img src="{{ png_url }}" />
-
 <br>
+{% endfor %}
 
 {% endblock %}
