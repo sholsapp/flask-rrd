@@ -18,7 +18,6 @@ log = logging.getLogger(__name__)
 app = Flask(__name__)
 app.register_blueprint(api, url_prefix='/api')
 manager = APIManager(app, flask_sqlalchemy_db=db)
-manager.create_api(RRD, methods=['GET', 'POST'])
 Bootstrap(app)
 
 
@@ -62,11 +61,21 @@ class ColorWheel(object):
 
 
 def init_webapp():
-  """Initialize the web application."""
+  """Initialize the web application.
+  
+  This function takes care to initialize:
+
+    - The Flask web application.
+    - The Flask-SQLAlchemy library.
+    - The Flask-Restless library.
+
+  """
   app.config['SQLALCHEMY_DATABASE_URI'] = make_conn_str()
-  db.app = app
-  db.init_app(app)
-  db.create_all()
+  with app.app_context():
+    db.app = app
+    db.init_app(app)
+    db.create_all()
+    manager.create_api(RRD, methods=['GET', 'POST'])
   rrd_dir = os.path.join(app.static_folder, 'rrds')
   if not os.path.exists(rrd_dir):
     os.makedirs(rrd_dir)
