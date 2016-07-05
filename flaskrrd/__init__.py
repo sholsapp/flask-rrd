@@ -62,7 +62,7 @@ class ColorWheel(object):
 
 def init_webapp():
   """Initialize the web application.
-  
+
   This function takes care to initialize:
 
     - The Flask web application.

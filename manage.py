@@ -24,11 +24,15 @@ def update_rrd():
       print requests.post(
         'http://localhost:5000/update/test',
         headers={'Content-Type': 'application/json'},
-        data=json.dumps({'values': [
-          str(random.randint(0, 1000)),
-          str(random.randint(0, 1000)),
-          str(random.randint(0, 1000)),
-        ]})).status_code
+        data=json.dumps({
+          'metrics': {
+            'COUNTER': {
+              'a': str(random.randint(0, 1000)),
+              'b': str(random.randint(0, 1000)),
+              'c': str(random.randint(0, 1000)),
+            },
+          },
+        })).status_code
     except Exception:
       print 'Failed to make request, maybe server is down?'
       #raise
