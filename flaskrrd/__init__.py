@@ -79,7 +79,7 @@ def create_rrd(rrd, description):
     for ds in description['metrics'][ds_type]:
       metrics_names.append(ds)
       metrics.append(
-        'DS:{name}:{type}:2000:U:U'.format(name=sanitized_ds(ds), type=ds_type)
+        'DS:{name}:{type}:120:U:U'.format(name=sanitized_ds(ds), type=ds_type)
       )
   rrdtool.create(
     rrd_path,
