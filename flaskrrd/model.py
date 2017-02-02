@@ -6,7 +6,13 @@ db = SQLAlchemy()
 
 
 class RRD(db.Model):
-  """A database table for RRD databases."""
+  """A database table for RRD databases.
+
+  :param str name: The RRD database name.
+  :param list[str] cols: The RRD database metric names.
+  :param str path: The RRD database path.
+
+  """
 
   __tablename__ = 'rrd'
 
@@ -16,16 +22,16 @@ class RRD(db.Model):
   cols_desc = db.Column(db.String(1024))
   path = db.Column(db.String(1024))
 
-  def __repr__(self):
-    return 'RRD(%r, %r)' % (
-      repr(self.name),
-      repr(self.cols_desc.split(',')))
-
   def __init__(self, name, cols, path):
     self.name = name
     self.cols_n = len(cols)
     self.cols_desc = ','.join(cols)
     self.path = path
+
+  def __repr__(self):
+    return 'RRD(%r, %r)' % (
+      repr(self.name),
+      repr(self.cols_desc.split(',')))
 
 
 class Graph(db.Model):
