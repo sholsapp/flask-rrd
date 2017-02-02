@@ -6,8 +6,8 @@ import requests
 import time
 
 from configobj import ConfigObj
+from flask_script import Manager
 from validate import Validator
-from flask.ext.script import Manager
 import rrdtool
 
 from flaskrrd import app, init_webapp

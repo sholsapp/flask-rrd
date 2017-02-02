@@ -3,8 +3,8 @@ import os
 import re
 
 from flask import Flask, Response, render_template, jsonify, request, url_for
-from flask.ext.bootstrap import Bootstrap
-from flask.ext.restless import APIManager
+from flask_bootstrap import Bootstrap
+from flask_restless import APIManager
 import rrdtool
 
 from flaskrrd.api import api
@@ -71,6 +71,7 @@ def init_webapp():
 
   """
   app.config['SQLALCHEMY_DATABASE_URI'] = make_conn_str()
+  app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
   with app.app_context():
     db.app = app
     db.init_app(app)
@@ -149,7 +150,7 @@ def info(rrd):
 @app.route('/update/<rrd>', methods=['POST'])
 def update(rrd):
   """Update or create a RRD database."""
-  desc = request.json
+  desc = request.get_json()
   rrd_entry = RRD.query.filter_by(name=rrd).first()
   if not rrd_entry:
     if create_rrd(rrd, desc):
