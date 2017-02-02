@@ -17,9 +17,6 @@ log = logging.getLogger(__name__)
 
 
 app = Flask(__name__)
-app.register_blueprint(api, url_prefix='/api')
-manager = APIManager(app, flask_sqlalchemy_db=db)
-Bootstrap(app)
 
 
 def init_webapp():
@@ -32,8 +29,12 @@ def init_webapp():
     - The Flask-Restless library.
 
   """
+  global app
   app.config['SQLALCHEMY_DATABASE_URI'] = make_conn_str()
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+  app.register_blueprint(api, url_prefix='/api')
+  manager = APIManager(app, flask_sqlalchemy_db=db)
+  Bootstrap(app)
   with app.app_context():
     db.app = app
     db.init_app(app)

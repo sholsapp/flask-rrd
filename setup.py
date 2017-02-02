@@ -27,4 +27,8 @@ setup(
     'requests',
     'rrdtool',
   ],
+  test_requires=[
+    'pytest',
+    'pytest-flask',
+  ],
 )
