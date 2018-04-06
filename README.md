@@ -4,7 +4,7 @@ The flask-rrd project is a simple Flask web application that acts as an API to
 create, update and graph RRD databases using
 [rrdtool](http://oss.oetiker.ch/rrdtool/).
 
-![A sample RRD made by flask-rrd!](https://github.com/sholsapp/flask-rrd/blob/master/images/netdev.png)
+![A sample RRD made by flask-rrd!](https://github.com/sholsapp/flask-rrd/blob/master/docs/images/netdev.png)
 
 ## development
 
