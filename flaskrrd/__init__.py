@@ -28,7 +28,7 @@ def init_webapp(test=False):
       - The Flask-Restless library.
 
     If initialized with `test=True` the application will use an in-memory
-    SQLite database, and should be used primarily for unit testing.
+    SQLite database, and should be used for unit testing, but not much else.
 
     """
     global app
@@ -98,7 +98,7 @@ def create_rrd(rrd, description):
 
     for ds_type in description['metrics']:
         for ds in description['metrics'][ds_type]:
-            metrics_names.append(ds)
+            metrics_names.append(sanitized_ds(ds))
             metrics.append('DS:{name}:{type}:120:U:U'.format(name=sanitized_ds(ds), type=ds_type))
 
     rrdtool.create(
@@ -162,10 +162,26 @@ def update(rrd):
 def graph(rrd):
     """Graph an entire RRD database.
 
-    This functionality is a default that graphs all metrics contained in an RRD
-    database.
+    This functionality is a default that graphs all metrics contained in a
+    single RRD database. For example, for a theoretical RRD database named
+    "weather", this route will print RRD charts for each metric "temperature",
+    "humidity", etc.
+
+    Accepts query parameters for the following::
+
+        - `start` - Should be an meaningful string for RRD to indicate the
+          desired start of the RRD. For example, can be `-1h` to indicate to
+          show data from 1 hour ago to now, or `-24h` to show data from 24
+          hours ago to now.
+        - `width` - Should be a width in pixels, and must be greater than 10
+          pixels, per RRD's requirement.
+
 
     """
+
+    start = request.args.get('start', '-1h')
+    width = request.args.get('width', '450')
+
     rrd_path = get_rrd_path(rrd)
     if not os.path.exists(rrd_path):
         log.error('The rrd [%s] does not exist!', rrd)
@@ -191,19 +207,34 @@ def graph(rrd):
 
     ret = rrdtool.graph(
       png_path,
-        '--start', '-1h',
+        '--start', str(start),
         '--title={title}'.format(title=rrd),
         '--vertical-label=Default',
         '--slope-mode',
-        '-w 450',
+        '--width', str(width),
         acc,
     )
+
     return render_template('index.html', png_urls=[url_for('static', filename='rrds/{rrd}-day.png'.format(rrd=rrd))])
 
 
 @app.route('/dashboard')
 def dashboard():
-    """Graph all RRD databases on a single page."""
+    """Graph all RRD databases on a single page.
+
+    Accepts query parameters for the following::
+
+        - `start` - Should be an meaningful string for RRD to indicate the
+          desired start of the RRD. For example, can be `-1h` to indicate to
+          show data from 1 hour ago to now, or `-24h` to show data from 24
+          hours ago to now.
+        - `width` - Should be a width in pixels, and must be greater than 10
+          pixels, per RRD's requirement.
+
+    """
+
+    start = request.args.get('start', '-1h')
+    width = request.args.get('width', '450')
 
     rrds = []
 
@@ -229,11 +260,11 @@ def dashboard():
 
         ret = rrdtool.graph(
             png_path,
-            '--start', '-1h',
+            '--start', str(start),
             '--title={title}'.format(title=rrd_entry.name),
             '--vertical-label=Default',
             '--slope-mode',
-            '-w 450',
+            '--width', str(width),
             acc,
         )
 
