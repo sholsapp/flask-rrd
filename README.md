@@ -8,8 +8,9 @@ create, update and graph RRD databases using
 
 ## development
 
-The following is helpful for setting up a development environment or getting
-started with a sample RRD. For actual deployment, see the `deployment` section.
+The following is helpful for setting up a local development environment or
+getting started with a sample RRD. For actual deployment, see the `deployment`
+section.
 
 ### dependencies
 
@@ -41,6 +42,20 @@ libraries.
 
 ```
 pip install -r requirements.txt
+```
+
+### docker
+
+Alternatively, if local development isn't your think, you can build and deploy inside of a Docker container. Build a Docker image by running the following command.
+
+```
+docker build --tag flask-rrd:latest .
+```
+
+You can also then deploy the application in a Docker container like so.
+
+```
+docker run -p 5000:500 flask-rrd:latest
 ```
 
 ### samples
