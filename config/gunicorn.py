@@ -7,8 +7,8 @@ workers = 2
 
 
 def on_starting(server):
-  server.log.setup(server.app.cfg)
+    server.log.setup(server.app.cfg)
 
 
 def post_fork(server, worker):
-  init_webapp()
+    init_webapp()
