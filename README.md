@@ -1,5 +1,7 @@
 # flask-rrd
 
+[![Travis](https://img.shields.io/travis/sholsapp/flask-rrd.svg?style=flat-square)](https://travis-ci.org/sholsapp/flask-rrd)
+
 The flask-rrd project is a simple Flask web application that acts as an API to
 create, update and graph RRD databases using
 [rrdtool](http://oss.oetiker.ch/rrdtool/).
