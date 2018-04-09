@@ -13,4 +13,4 @@ install:
     - python setup.py develop
 
 script:
-    - py.test test
+    - py.test tests
