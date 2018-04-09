@@ -8,6 +8,7 @@ python:
   - "2.7"
 
 install:
+    - sudo apt-get --assume-yes install librrd-dev libxml2-dev libglib2.0 libcairo2-dev libpango1.0-dev python-dev python-setuptools build-essential
     - pip install --upgrade -r requirements.txt
     - python setup.py develop
 
