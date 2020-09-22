@@ -16,4 +16,4 @@ requests==2.20.0
 rrdtool==0.1.4
 six==1.11.0
 SQLAlchemy==1.2.6
-Werkzeug==0.14.1
+Werkzeug==0.15.3
