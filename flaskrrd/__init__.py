@@ -4,7 +4,6 @@ import re
 
 from flask import Flask, Response, render_template, jsonify, request, url_for, safe_join
 from flask_bootstrap import Bootstrap
-from flask_restless import APIManager
 import rrdtool
 
 from flaskrrd.color import ColorWheel
@@ -38,13 +37,11 @@ def init_webapp(test=False):
     else:
         app.config['SQLALCHEMY_DATABASE_URI'] = make_conn_str()
 
-    manager = APIManager(app, flask_sqlalchemy_db=db)
     Bootstrap(app)
     with app.app_context():
         db.app = app
         db.init_app(app)
         db.create_all()
-        manager.create_api(RRD, methods=['GET', 'POST'])
 
     rrd_dir = os.path.join(app.static_folder, 'rrds')
     if not os.path.exists(rrd_dir):
